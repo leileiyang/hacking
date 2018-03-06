@@ -2,8 +2,6 @@
 # -*- coding: UTF-8 -*-
 
 import xml.etree.cElementTree as ET
-import time
-from table import Table
 
 class F7000Xml():
   def __init__(self):
@@ -13,7 +11,6 @@ class F7000Xml():
     return True if value == "true" else False
 
   def Parse(self, path):
-    self.before_load_time_ = time.time()
     tree = ET.parse(path)
     self.root_ = tree.getroot()
 
@@ -282,7 +279,7 @@ class F7000Param():
     self.out_ = Out(f7000xml)
     self.in_ = In(f7000xml)
 
-  def Parse(self, table):
+  def Parse(self):
     f7000xml_ = F7000Xml()
     f7000xml_.Parse("/tmp/f7000param.xml")
     self.ParseInOut(f7000xml_)
@@ -334,131 +331,6 @@ class F7000Param():
     self.plasma_offset_x_ = f7000xml_.GetAttr("TorchOffset", "PlasmaHOffetByFlame", 'float')
     self.plasma_offset_y_ = f7000xml_.GetAttr("TorchOffset", "PlasmaVOffetByFlame", 'float')
 
-    self.display_table_ = {}
-    self.times_ = {}
-
-    name = "ignition_time"
-    self.times_[name] = self.ignition_time_
-    self.display_table_[name] = table.FIRE_DISPLAY_TIME
-
-    name = "torch_down_time"
-    self.times_[name] = self.torch_down_time_
-    self.display_table_[name] = table.TORCH_DOWN_TIME
-
-    name = "high_preheat_time"
-    self.times_[name] = self.high_preheat_time_
-    self.display_table_[name] = table.HIGH_PREHEAT_TIME
-
-    name = "low_preheat_time"
-    self.times_[name] = self.low_preheat_time_
-    self.display_table_[name] = table.LOW_PREHEAT_TIME
-
-    name = "pierce_up_time"
-    self.times_[name] = self.pierce_up_time_ #{{OneCute_value.ini/OneCut/PerforateRisingTime\perforated_rising_time}}
-    self.display_table_[name] = table.TORCH_UP_TIME
-
-    name = "pierce_1_time"
-    self.times_[name] = self.pierce_1_time_#{{OneCute_value.ini/OneCut/PerforateTime1\level1_perforate_time}}
-    self.display_table_[name] = table.PIERCE1_DISPLAY_TIME
-
-    name = "pierce_2_time"
-    self.times_[name] = self.pierce_2_time_#{{OneCute_value.ini/OneCut/PerforateTime2\level2_perforate_time}}
-    self.display_table_[name] = table.PIERCE2_DISPLAY_TIME
-
-    name = "pierce_3_time"
-    self.times_[name] = self.pierce_3_time_#{{OneCute_value.ini/OneCut/PerforateTime3\level3_perforate_time}}
-    self.display_table_[name] = table.PIERCE3_DISPLAY_TIME
-
-    name = "pierce_down_time"
-    self.times_[name] = self.pierce_down_time_#{{OneCute_value.ini/OneCut/PerforatedDeclineTime\perforated_decline_time}}
-    self.display_table_[name] = table.TORCH_DOWN_TIME
-
-    name = "spraying_fire_time"
-    self.times_[name] = self.spraying_fire_time_#{{OneCute_value.ini/OneCut/SprayingFireTime\spraying_fire_time}}
-    self.display_table_[name] = table.SPRAYING_FIRE_TIME
-
-    name = "spraying_falling_time"
-    self.times_[name] = self.spraying_falling_time_#{{OneCute_value.ini/OneCut/SprayingFallingTime\spraying_falling_time}}
-    self.display_table_[name] = table.SPRAYING_FALLING_TIME
-
-    name = "spraying_preheating_time"
-    self.times_[name] = self.spraying_preheating_time_#{{OneCute_value.ini/OneCut/SprayingPreheatTime\spraying_preheating_time}}
-    self.display_table_[name] = table.SPRAYING_PREHEATING_TIME
-
-    name = "powder_open_time"
-    self.times_[name] = self.powder_open_time_#{{OneCute_value.ini/OneCut/PowderOpenTime\powder_open_time}}
-    self.display_table_[name] = table.POWDER_OPEN_TIME
-
-    name = "powder_close_time"
-    self.times_[name] = self.powder_close_time_#{{OneCute_value.ini/OneCut/PowderCloseTime\powder_close_time}}
-    self.display_table_[name] = table.POWDER_CLOSE_TIME
-
-    name = "spraying_rising_time"
-    self.times_[name] = self.spraying_rising_time_#{{OneCute_value.ini/OneCut/SprayingRisingTime\spraying_rising_time}}
-    self.display_table_[name] = table.SPRAYING_RISING_TIME
-
-    name = "oxygen_creep_time"
-    self.times_[name] = self.oxygen_creep_time_#{{OneCute_value.ini/OneCut/CreepTime\oxygen_creep_time}}
-    self.display_table_[name] = table.OXYGEN_CREEP_TIME
-
-    name = "plasma_creep_time"
-    self.times_[name] = self.plasma_creep_time_#{{OneCute_value.ini/OneCut/CreepTime\plasma_creep_time}}
-    self.display_table_[name] = table.PLASMA_CREEP_TIME
-
-    name = "plasma_perforated_rising_time"
-    self.times_[name] = self.plasma_perforated_rising_time_#{{OneCute_value.ini/OneCut/PlasmaPerforatedRisingTime\plasma_perforated_rising_time}}
-    self.display_table_[name] = table.TORCH_UP_TIME
-
-    name = "plasma_perforated_decline_time"
-    self.times_[name] = self.plasma_perforated_decline_time_#{{OneCute_value.ini/OneCut/PlasmaPerforatedDeclineTime\plasma_perforated_decline_time}}
-    self.display_table_[name] = table.TORCH_DOWN_TIME
-
-    name = "positioning_check_time"
-    self.times_[name] = self.positioning_check_time_#{{OneCute_value.ini/OneCut/PosCheckTime\positioning_check_time}}
-    self.display_table_[name] = table.POSITION_CHECK_TIME
-
-    name = "positioning_rising_time"
-    self.times_[name] = self.positioning_rising_time_#{{OneCute_value.ini/OneCut/PosRisingTime\positioning_rising_time}}
-    self.display_table_[name] = table.TORCH_UP_TIME
-
-    name = "arc_delay_time"
-    self.times_[name] = self.arc_delay_time_#{{OneCute_value.ini/OneCut/DelayTime\arc_delay_time}}
-    self.display_table_[name] = table.ARC_DELAY_TIME
-
-    name = "arc_check_time"
-    self.times_[name] = self.arc_check_time_#{{OneCute_value.ini/OneCut/CheckTime\arc_check_time}}
-    self.display_table_[name] = table.ARC_CHECK_TIME
-
-    name = "preforate_time"
-    self.times_[name] = self.preforate_time_#{{OneCute_value.ini/OneCut/PerforateTime\preforate_time}}
-    self.display_table_[name] = table.PERFORATED_DISPLAY_TIME
-
-    name = "oxygen_torch_up_time"
-    self.times_[name] = self.oxygen_torch_up_time_
-    self.display_table_[name] = table.TORCH_UP_TIME
-
-    name = "exhaust_time"
-    self.times_[name] = self.exhaust_time_
-    self.display_table_[name] = table.EXHAUST_DISPLAY_TIME
-
-    name = "plasma_torch_up_time"
-    self.times_[name] = self.plasma_torch_up_time_
-    self.display_table_[name] = table.TORCH_UP_TIME
-
-  def GetDisplayTable(self, name):
-    if (self.display_table_.has_key(name)):
-      return self.display_table_[name]
-    else:
-      return -1
-
-  def GetTime(self, name):
-    if (self.times_.has_key(name)):
-      return self.times_[name]
-    else:
-      return 0.01
-
 if __name__ == '__main__':
-  from table import Table
-  table_ = Table()
   config_param_ = F7000Param()
-  config_param_.Parse(table_)
+  config_param_.Parse()
