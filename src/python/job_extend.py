@@ -5,11 +5,12 @@
 # 2: cutting
 # 3: cooling
 
-layer_jobs = [1, 0, 2, 1]
+layer_jobs = [1, 1, 2, 1]
 
 mode_start = -1
 mode_end = -1
 mode = -1
+mode_pos = [0, 0]
 cur_layer = -1
 
 mode_start_pos = [0, 0]
@@ -26,13 +27,34 @@ def layer_by_mode(mode):
 
 def mode_loop(fin, fout, start, end, mode, count):
     for i in range(count):
-        fin.seek(start, 0)
-        while fin.tell() != end:
-            line = fin.readline()
-            if line[:3] == 'M07' and (mode == 0 or mode == 3):
-                fout.write('M07 U' + str(layer_by_mode(mode)) + '\n')
-            else:
-                fout.write(line)
+        if mode != 1:
+            fin.seek(start, 0)
+            fout.write("G00 X%f Y%f\n" % (mode_pos[0], mode_pos[1]))
+            while fin.tell() != end:
+                line = fin.readline()
+                if line[:3] == 'M07':
+                    fout.write("M00\n")
+                    if mode == 0 or mode == 3:
+                        fout.write('M07 U' + str(layer_by_mode(mode)) + '\n')
+                    else:
+                        fout.write(line)
+                else:
+                    fout.write(line)
+        else: #pre-pierce
+            fin.seek(start, 0)
+            cur_pos[0], cur_pos[1] = mode_pos[0], mode_pos[1]
+            while fin.tell() != end:
+                line = fin.readline()
+                if line[:3] == 'M07':
+                    fout.write("G00 X%f Y%f\n" % (cur_pos[0], cur_pos[1]))
+                    fout.write("M00\n")
+                    fout.write(line)
+                elif line[:3] == 'M08':
+                    fout.write(line)
+                else:
+                    update_pos(line)
+
+
 
 # job mode switch between the same layer
 def mode_switch(layer_jobs):
@@ -82,18 +104,21 @@ def mode_jump(fin, mode, layer_jobs):
     if mode == 0:
         if layer_jobs[1] or layer_jobs[2] or layer_jobs[3]:
             fin.seek(mode_start, 0)
+            cur_pos[0], cur_pos[1] = mode_pos[0], mode_pos[1]
             mode_start = -1
         else:
             pass
     elif mode == 1:
         if layer_jobs[2] or layer_jobs[3]:
             fin.seek(mode_start, 0)
+            cur_pos[0], cur_pos[1] = mode_pos[0], mode_pos[1]
             mode_start = -1
         else:
             pass
     elif mode == 2:
         if layer_jobs[3]:
             fin.seek(mode_start, 0)
+            cur_pos[0], cur_pos[1] = mode_pos[0], mode_pos[1]
             mode_start = -1
         else:
             pass
@@ -126,6 +151,7 @@ with open('demo.ngc', 'r') as fin, open('result.ngc', 'w') as fout:
             break
         if line[:3] == 'M07':
             if mode_start == -1:
+                mode_pos[0], mode_pos[1] = cur_pos[0], cur_pos[1]
                 mode_start = fin.tell() - len(line)
                 words = line.split()
                 if int(words[1][1:]) != cur_layer:
@@ -142,7 +168,13 @@ with open('demo.ngc', 'r') as fin, open('result.ngc', 'w') as fout:
                         mode_loop(fin, fout, mode_start, mode_end, mode, layer_jobs[mode])
                         mode_jump(fin, mode, layer_jobs)
                 elif mode == 1:
-                    pass
+                    words = line.split()
+                    if int(words[1][1:]) == cur_layer:
+                        pass
+                    else:
+                        mode_end = fin.tell() - len(line)
+                        mode_loop(fin, fout, mode_start, mode_end, mode, layer_jobs[mode])
+                        mode_jump(fin, mode, layer_jobs)
                 elif mode == 2:
                     mode_end = fin.tell() - len(line)
                     mode_loop(fin, fout, mode_start, mode_end, mode, layer_jobs[mode])
@@ -158,3 +190,5 @@ with open('demo.ngc', 'r') as fin, open('result.ngc', 'w') as fout:
                 mode_end = fin.tell() - len(line)
                 mode_loop(fin, fout, mode_start, mode_end, mode, layer_jobs[mode])
                 mode_jump(fin, mode, layer_jobs)
+
+        update_pos(line)
