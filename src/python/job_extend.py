@@ -38,6 +38,9 @@ def mode_loop(fin, fout, start, end, mode, count):
                         fout.write('M07 U' + str(layer_by_mode(mode)) + '\n')
                     else:
                         fout.write(line)
+                elif line[:3] == 'M08':
+                    fout.write("M00\n")
+                    fout.write(line)
                 else:
                     fout.write(line)
         else: #pre-pierce
@@ -50,6 +53,7 @@ def mode_loop(fin, fout, start, end, mode, count):
                     fout.write("M00\n")
                     fout.write(line)
                 elif line[:3] == 'M08':
+                    fout.write("M00\n")
                     fout.write(line)
                 else:
                     update_pos(line)
