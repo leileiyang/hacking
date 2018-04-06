@@ -14,22 +14,16 @@ enum JOB_MODE {
   COOLING = 3,
 };
 
-struct LayerJobs {
-  int striping;
-  int prepierce;
-  int cutting;
-  int cooling;
-};
-
 struct Position {
   double x;
   double y;
 };
 
-class JobParser {
+class JobArrange {
  public:
-  virtual bool Parse(const char* in_file, const char* out_file,
-      std::vector<LayerJobs> jobs) = 0;
+  JobArrange(): fin_(NULL), fout_(NULL) {}
+  virtual bool Arrange(const char* in_file, const char* out_file,
+      std::vector<std::vector<int> > jobs) = 0;
 
  protected:
   FILE *fin_;
@@ -37,10 +31,13 @@ class JobParser {
 
 };
 
-class LaserJobParser: public JobParser {
+class LaserJob: public JobArrange {
  public:
-  virtual bool Parse(const char* in_file, const char* out_file,
-      std::vector<LayerJobs> jobs);
+  LaserJob(): mode_(UNPROCESS), mode_start_(-1), mode_end_(-1),
+      cur_layer_(-1) {}
+
+  virtual bool Arrange(const char* in_file, const char* out_file,
+      std::vector<std::vector<int> > jobs);
 
  private:
   Position mode_pos_;
@@ -51,11 +48,14 @@ class LaserJobParser: public JobParser {
   int cur_layer_;
 
   void ModeLoop(int start, int end, int mode, int count);
-  void ModeSwitch(const LayerJobs &jobs);
-  void ModeJump(int mode, const LayerJobs &jobs);
+  void ModeSwitch(const std::vector<int> &job);
+  void ModeJump(int mode, const std::vector<int> &job);
+  void JumpToModeStart();
 
   bool IsM07(char *buf);
   bool IsM08(char *buf);
+  bool IsM02(char *buf);
+  bool IsMCommand(char *buf, char c);
   void UpdatePos(char *buf);
   int GetLayer(char *buf);
 
@@ -69,24 +69,30 @@ class LaserJobParser: public JobParser {
 
 };
 
-std::map<int, int> LaserJobParser::mode_layer = MakeModeLayerMap();
+std::map<int, int> LaserJob::mode_layer = MakeModeLayerMap();
 
 
-bool LaserJobParser::IsM07(char *buf) {
+bool LaserJob::IsMCommand(char *buf, char c) {
   if (strlen(buf) < 3) {
     return false;
   }
-  return buf[0] == 'M' && buf[1] == '0' && buf[2] == '7';
+  return buf[0] == 'M' && buf[1] == '0' && buf[2] == c;
 }
 
-bool LaserJobParser::IsM08(char *buf) {
-  if (strlen(buf) < 3) {
-    return false;
-  }
-  return buf[0] == 'M' && buf[1] == '0' && buf[2] == '8';
+bool LaserJob::IsM07(char *buf) {
+  return IsMCommand(buf, '7');
 }
 
-void LaserJobParser::UpdatePos(char *buf) {
+bool LaserJob::IsM08(char *buf) {
+  return IsMCommand(buf, '8');
+}
+
+bool LaserJob::IsM02(char *buf) {
+  return IsMCommand(buf, '2');
+}
+
+void LaserJob::UpdatePos(char *buf) {
+  // g command: G01 X5 Y10
   char g[20] = {0};
   char x[20] = {0};
   char y[20] = {0};
@@ -98,14 +104,15 @@ void LaserJobParser::UpdatePos(char *buf) {
   }
 }
 
-int LaserJobParser::GetLayer(char *buf) {
+int LaserJob::GetLayer(char *buf) {
+  // m command: M07 U1
   char m[20] = {0};
   char u[20] = {0};
   sscanf(buf, "%s %s", m, u);
   return atoi(&u[1]);
 }
 
-void LaserJobParser::ModeLoop(int start, int end, int mode, int count) {
+void LaserJob::ModeLoop(int start, int end, int mode, int count) {
   char buf[256];
   for (int i = 0; i < count; i++) {
     if (mode != PRE_PIERCE) { // striping, cutting, cooling 
@@ -149,50 +156,50 @@ void LaserJobParser::ModeLoop(int start, int end, int mode, int count) {
   }
 }
 
-void LaserJobParser::ModeSwitch(const LayerJobs &jobs) {
+void LaserJob::ModeSwitch(const std::vector<int> &job) {
   switch (mode_) {
     case UNPROCESS:
-      if (jobs.striping) {
+      if (job[STRIPING]) {
         mode_ = STRIPING;
-      } else if (jobs.prepierce) {
+      } else if (job[PRE_PIERCE]) {
         mode_ = PRE_PIERCE;
-      } else if (jobs.cutting) {
+      } else if (job[CUTTING]) {
         mode_ = CUTTING;
-      } else if (jobs.cooling) {
+      } else if (job[COOLING]) {
         mode_ = COOLING;
       } else {
         mode_ = UNPROCESS;
       }
       break;
     case STRIPING:
-      if (jobs.prepierce) {
+      if (job[PRE_PIERCE]) {
         mode_ = PRE_PIERCE;
-      } else if (jobs.cutting) {
+      } else if (job[CUTTING]) {
         mode_ = CUTTING;
-      } else if (jobs.cooling) {
+      } else if (job[COOLING]) {
         mode_ = COOLING;
       } else {
         mode_ = UNPROCESS;
       }
       break;
     case PRE_PIERCE:
-      if (jobs.cutting) {
+      if (job[CUTTING]) {
         mode_ = CUTTING;
-      } else if (jobs.cooling) {
+      } else if (job[COOLING]) {
         mode_ = COOLING;
       } else {
         mode_ = UNPROCESS;
       }
       break;
     case CUTTING:
-      if (jobs.cooling) {
+      if (job[COOLING]) {
         mode_ = COOLING;
       } else {
         mode_ = UNPROCESS;
       }
       break;
     case COOLING:
-      if (jobs.cutting) {
+      if (job[CUTTING]) {
         mode_ = CUTTING;
       } else {
         mode_ = UNPROCESS;
@@ -204,32 +211,32 @@ void LaserJobParser::ModeSwitch(const LayerJobs &jobs) {
   }
 }
 
-void LaserJobParser::ModeJump(int mode, const LayerJobs &jobs) {
+void LaserJob::JumpToModeStart() {
+  fseek(fin_, mode_start_, SEEK_SET);
+  cur_pos_ = mode_pos_;
+  mode_start_ = -1;
+}
+
+void LaserJob::ModeJump(int mode, const std::vector<int> &job) {
   if (mode == STRIPING) {
-    if (jobs.prepierce || jobs.cutting || jobs.cooling) {
-      fseek(fin_, mode_start_, SEEK_SET);
-      cur_pos_ = mode_pos_;
-      mode_start_ = -1;
+    if (job[PRE_PIERCE] || job[CUTTING] || job[COOLING]) {
+      JumpToModeStart();
     } 
   } else if (mode == PRE_PIERCE) {
-    if (jobs.cutting || jobs.cooling) {
-      fseek(fin_, mode_start_, SEEK_SET);
-      cur_pos_ = mode_pos_;
-      mode_start_ = -1;
+    if (job[CUTTING] || job[COOLING]) {
+      JumpToModeStart();
     }
   } else if (mode == CUTTING) {
-    if (jobs.cooling) {
-      fseek(fin_, mode_start_, SEEK_SET);
-      cur_pos_ = mode_pos_;
-      mode_start_ = -1;
+    if (job[COOLING]) {
+      JumpToModeStart();
     }
   } else if (mode == COOLING) {
     mode_start_ = -1;
   }
 }
 
-bool LaserJobParser::Parse(const char* in_file, const char* out_file,
-    std::vector<LayerJobs> jobs) {
+bool LaserJob::Arrange(const char* in_file, const char* out_file,
+    std::vector<std::vector<int> > jobs) {
 
   fin_ = fopen("demo.ngc", "r");
   fout_ = fopen("result2.ngc", "w");
@@ -238,7 +245,7 @@ bool LaserJobParser::Parse(const char* in_file, const char* out_file,
   }
   char line[256];
   while (fgets(line, 256, fin_)) {
-    if (IsM07(line)) {
+    if (IsM07(line)) { // M07
       if (mode_start_ == -1) {
         mode_pos_ = cur_pos_;
         mode_start_ = ftell(fin_) - strlen(line);
@@ -249,13 +256,39 @@ bool LaserJobParser::Parse(const char* in_file, const char* out_file,
         }
         ModeSwitch(jobs[cur_layer_]);
       } else {
-        if (mode_ == STRIPING) {
+        if (mode_ == STRIPING || mode_ == PRE_PIERCE) {
           if (GetLayer(line) != cur_layer_) {
             mode_end_ = ftell(fin_) - strlen(line);
-            ModeLoop(mode_start_, mode_end_, mode_, jobs[cur_layer_].
+            ModeLoop(mode_start_, mode_end_, mode_, jobs[cur_layer_][mode_]);
+            ModeJump(mode_, jobs[cur_layer_]);
           }
+        } else if (mode_ == CUTTING || mode_ == COOLING) {
+          mode_end_ = ftell(fin_) - strlen(line);
+          ModeLoop(mode_start_, mode_end_, mode_, jobs[cur_layer_][mode_]);
+          ModeJump(mode_, jobs[cur_layer_]);
         }
       }
+    } else if (IsM02(line)) {
+      if (mode_start_ == -1) {
+        fprintf(fout_, "%s", line);
+      } else {
+        mode_end_ = ftell(fin_) - strlen(line);
+        ModeLoop(mode_start_, mode_end_, mode_, jobs[cur_layer_][mode_]);
+        ModeJump(mode_, jobs[cur_layer_]);
+      }
     }
+    UpdatePos(line);
   }
+}
+
+int main () {
+  LaserJob laser_job;
+  std::vector<int> job(4, 1);
+  job[2] = 2;
+  std::vector<std::vector<int> >jobs;
+  jobs.push_back(job);
+  jobs.push_back(job);
+  jobs.push_back(job);
+  laser_job.Arrange("demo.ngc", "result2.ngc", jobs);
+  return 0;
 }
