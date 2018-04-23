@@ -16,7 +16,9 @@ int main() {
   memset(m_buf, 0, 10);
   memset(p_buf, 0, 30);
   memset(q_buf, 0, 30);
+  char c;
   int index;
+  //sscanf(m_order_no_args, "%c%d %s %s", &c, &index, p_buf, q_buf);
   sscanf(m_order_no_args, "%*[M]%d %s %s", &index, p_buf, q_buf);
   printf("m:%d p:%f q:%f\n", index, atof(&p_buf[1]), atof(&q_buf[1]));
 }
