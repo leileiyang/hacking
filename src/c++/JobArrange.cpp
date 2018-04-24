@@ -124,9 +124,9 @@ void LaserJob::ModeLoop(int start, int end, int mode, int count) {
         if (IsM07(buf)) { // M07
           fprintf(fout_, "M00\n");
           if (mode == STRIPING || mode == COOLING) {
-            fprintf(fout_, "M07 U%d\n", mode_layer[mode]);
+            fprintf(fout_, "M07 (%d)\n", mode_layer[mode]);
           } else {
-            fprintf(fout_, "%s", buf);
+            fprintf(fout_, "M07 (%d)\n", cur_layer_);
           }
         } else if (IsM08(buf)) { // M08
           fprintf(fout_, "M00\n");
@@ -144,7 +144,7 @@ void LaserJob::ModeLoop(int start, int end, int mode, int count) {
         if (IsM07(buf)) { // M07
           fprintf(fout_, "G00 X%.4f Y%.4f\n", cur_pos_.x, cur_pos_.y);
           fprintf(fout_, "M00\n");
-          fprintf(fout_, "%s", buf);
+          fprintf(fout_, "M07 (%d)\n", cur_layer_);
         } else if (IsM08(buf)) { // M08
           fprintf(fout_, "M00\n");
           fprintf(fout_, "%s", buf);
@@ -238,8 +238,8 @@ void LaserJob::ModeJump(int mode, const std::vector<int> &job) {
 bool LaserJob::Arrange(const char* in_file, const char* out_file,
     std::vector<std::vector<int> > jobs) {
 
-  fin_ = fopen("demo.ngc", "r");
-  fout_ = fopen("result2.ngc", "w");
+  fin_ = fopen(in_file, "r");
+  fout_ = fopen(out_file, "w");
   if (!fin_ || !fout_) {
     return false;
   }
@@ -289,6 +289,6 @@ int main () {
   jobs.push_back(job);
   jobs.push_back(job);
   jobs.push_back(job);
-  laser_job.Arrange("demo.ngc", "result2.ngc", jobs);
+  laser_job.Arrange("demo.ngc", "result.ngc", jobs);
   return 0;
 }
