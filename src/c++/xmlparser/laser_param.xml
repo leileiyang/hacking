@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<LaserParam>
+	<PlcParam>
+		<CraftData enable_incr="true" incr_time="300" lift="10" gas="0" pressure="10" power="1" ratio="1" frequency="50" stay="3000" enable_blow="false" blow_time="3000" />
+	</PlcParam>
+</LaserParam>
