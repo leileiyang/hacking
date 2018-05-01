@@ -6,17 +6,14 @@
 #include <vector>
 #include <map>
 
+#include "GCodeBase.h"
+
 enum JOB_MODE {
   UNPROCESS = -1,
   STRIPING = 0,
   PRE_PIERCE = 1,
   CUTTING = 2,
   COOLING = 3,
-};
-
-struct Position {
-  double x;
-  double y;
 };
 
 class JobArrange {
@@ -33,15 +30,15 @@ class JobArrange {
 
 class LaserJob: public JobArrange {
  public:
-  LaserJob(): mode_(UNPROCESS), mode_start_(-1), mode_end_(-1),
-      cur_layer_(-1) {}
+  LaserJob(): mode_pos_(Point()), cur_pos_(Point()), mode_(UNPROCESS),
+  mode_start_(-1), mode_end_(-1), cur_layer_(-1) {}
 
   virtual bool Arrange(const char* in_file, const char* out_file,
       std::vector<std::vector<int> > jobs);
 
  private:
-  Position mode_pos_;
-  Position cur_pos_;
+  Point mode_pos_;
+  Point cur_pos_;
   int mode_;
   int mode_start_;
   int mode_end_;
@@ -52,12 +49,8 @@ class LaserJob: public JobArrange {
   void ModeJump(int mode, const std::vector<int> &job);
   void JumpToModeStart();
 
-  bool IsM07(char *buf);
-  bool IsM08(char *buf);
-  bool IsM02(char *buf);
-  bool IsMCommand(char *buf, char c);
-  void UpdatePos(char *buf);
   int GetLayer(char *buf);
+  void UpdatePos(char *buf);
 
   static std::map<int, int> mode_layer;
   static std::map<int, int> MakeModeLayerMap() {
@@ -72,44 +65,18 @@ class LaserJob: public JobArrange {
 std::map<int, int> LaserJob::mode_layer = MakeModeLayerMap();
 
 
-bool LaserJob::IsMCommand(char *buf, char c) {
-  if (strlen(buf) < 3) {
-    return false;
-  }
-  return buf[0] == 'M' && buf[1] == '0' && buf[2] == c;
-}
-
-bool LaserJob::IsM07(char *buf) {
-  return IsMCommand(buf, '7');
-}
-
-bool LaserJob::IsM08(char *buf) {
-  return IsMCommand(buf, '8');
-}
-
-bool LaserJob::IsM02(char *buf) {
-  return IsMCommand(buf, '2');
-}
-
 void LaserJob::UpdatePos(char *buf) {
-  // g command: G01 X5 Y10
-  char g[20] = {0};
-  char x[20] = {0};
-  char y[20] = {0};
-  sscanf(buf, "%s %s %s", g, x, y);
-  int g_type = atoi(&g[1]);
-  if (g_type == 0 || g_type == 1 || g_type == 2 || g_type == 3) {
-    cur_pos_.x = atof(&x[1]);
-    cur_pos_.y = atof(&y[1]);
+  if (IsCuttingCurve(buf) || IsMoving(buf)) {
+    cur_pos_ = ExtractPosition(buf);
   }
 }
 
 int LaserJob::GetLayer(char *buf) {
   // m command: M07 U1
   char m[20] = {0};
-  char u[20] = {0};
-  sscanf(buf, "%s %s", m, u);
-  return atoi(&u[1]);
+  int layer = 0;
+  sscanf(buf, "%s U%d", m, &layer);
+  return layer;
 }
 
 void LaserJob::ModeLoop(int start, int end, int mode, int count) {
@@ -289,6 +256,6 @@ int main () {
   jobs.push_back(job);
   jobs.push_back(job);
   jobs.push_back(job);
-  laser_job.Arrange("demo.ngc", "result.ngc", jobs);
+  laser_job.Arrange("demo.ngc", "result1.ngc", jobs);
   return 0;
 }

@@ -1,0 +1,2 @@
+env = Environment(CCFLAGS='-g')
+env.Program('JobArrange', ['JobArrange.cpp', 'GCodeBase.cpp'])  
