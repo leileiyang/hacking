@@ -3,6 +3,9 @@
 
 #include "pugixml.hpp"
 
+#include <vector>
+#include <string>
+
 struct CraftData {
   bool enable_incr;
   double incr_time;
@@ -21,6 +24,8 @@ struct CraftData {
 class XmlParser {
  public:
   bool ParseXml(const char* file);
+  pugi::xml_node FindNodeByPath(const char *node_path);
+  pugi::xpath_node_set SelectNodes(const char *query);
 
   pugi::xml_document doc_;
 
