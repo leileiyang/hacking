@@ -4,11 +4,21 @@
 
 class LaserXmlParser: public XmlParser {
  public:
-  bool AddCraftDataNodes(int num);
+  bool AddLayerNodes(int num);
+  bool AddLayerContents(pugi::xml_node layer_node);
+  void LayerNodeComplement(pugi::xml_node layer_node);
+  void LayerNodesComplement(pugi::xpath_node_set layer_nodes);
+
+  bool AddProcessCfgNode(pugi::xml_node parent_node);
+  bool AddProcessCfgAttributes(pugi::xml_node processcfg_node);
+  void ProcessCfgAttributesComplement(pugi::xml_node node);
+
+  bool AddCraftDataNodes(int num, pugi::xml_node parent_node);
   bool AddCraftDataAttributes(pugi::xml_node craftdata_node);
   void CraftDataAttributesComplement(pugi::xml_node craftdata_node);
   void CraftDataAttributesComplement(pugi::xpath_node_set craftdata_nodes);
-  pugi::xpath_node_set CraftDataNodes();
+
+  pugi::xpath_node_set LayerNodes();
 
 };
 
