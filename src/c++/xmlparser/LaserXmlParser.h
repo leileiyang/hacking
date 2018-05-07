@@ -8,6 +8,14 @@ class LaserXmlParser: public XmlParser {
   bool AddLayerContents(pugi::xml_node layer_node);
   void LayerNodeComplement(pugi::xml_node layer_node);
   void LayerNodesComplement(pugi::xpath_node_set layer_nodes);
+  void SetCuttingProcedure();
+  void SetPierce1Procedure();
+  void SetPierce2Procedure();
+  void SetPierce3Procedure();
+  void SetStripingProcedure();
+  void SetCoolingProcedure();
+  void SetLaserOffProcedure();
+  void SetLaserOffShortProcedure();
 
   bool AddProcessCfgNode(pugi::xml_node parent_node);
   bool AddProcessCfgAttributes(pugi::xml_node processcfg_node);

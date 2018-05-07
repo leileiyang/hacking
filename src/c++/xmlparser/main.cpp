@@ -19,6 +19,14 @@ int main() {
   } else {
     xml_parser.AddLayerNodes(CRAFT_LAYERS);
   }
+  xml_parser.SetCuttingProcedure();
+  xml_parser.SetPierce1Procedure();
+  xml_parser.SetPierce2Procedure();
+  xml_parser.SetPierce3Procedure();
+  xml_parser.SetStripingProcedure();
+  xml_parser.SetCoolingProcedure();
+  xml_parser.SetLaserOffProcedure();
+  xml_parser.SetLaserOffShortProcedure();
   if (xml_parser.doc_.save_file("laser_param.xml")) {
     return 0;
   }

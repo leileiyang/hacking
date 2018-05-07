@@ -148,3 +148,212 @@ void LaserXmlParser::CraftDataAttributesComplement(\
 pugi::xpath_node_set LaserXmlParser::LayerNodes() {
   return SelectNodes("LaserParam/PlcParam/Layer");
 }
+
+#define AddCmdNode(CmdId, CmdArgs) do { \
+  pugi::xml_node cmd_node = node.append_child("PlcCmd"); \
+  cmd_node.append_attribute("CmdId") = CmdId; \
+  cmd_node.append_attribute("CmdArgs") = CmdArgs; \
+} while (0)
+
+void LaserXmlParser::SetCuttingProcedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("Cutting");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("Cutting");
+
+  AddCmdNode(LASER_POWER_CUTTING, "");
+  AddCmdNode(GAS_PRESSURE_CUTTING, ""); 
+  AddCmdNode(GAS_OPEN_CUTTING, ""); 
+  AddCmdNode(LHC_FOLLOW_CUTTING, ""); 
+  AddCmdNode(FOCUS_POSITION_CUTTING, ""); 
+  AddCmdNode(LASER_PULSEFREQ_CUTTING, ""); 
+  AddCmdNode(LASER_DUTYRATIO_CUTTING, ""); 
+  AddCmdNode(LASER_TYPE_CUTTING, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_CUTTING, ""); 
+}
+
+void LaserXmlParser::SetPierce1Procedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("FirstPierce");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("FirstPierce");
+
+  AddCmdNode(LASER_POWER_FIRST, "");
+  AddCmdNode(GAS_PRESSURE_FIRST, ""); 
+  AddCmdNode(GAS_OPEN_FIRST, ""); 
+  AddCmdNode(LHC_FOLLOW_FIRST, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(FOCUS_POSITION_FIRST, ""); 
+  AddCmdNode(LASER_PULSEFREQ_FIRST, ""); 
+  AddCmdNode(LASER_DUTYRATIO_FIRST, ""); 
+  AddCmdNode(LASER_TYPE_FIRST, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_FIRST, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_FIRST, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_FIRST, ""); 
+}
+
+void LaserXmlParser::SetPierce2Procedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("SecondPierce");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("SecondPierce");
+
+  AddCmdNode(LASER_POWER_SECOND, "");
+  AddCmdNode(GAS_PRESSURE_SECOND, ""); 
+  AddCmdNode(GAS_OPEN_SECOND, ""); 
+  AddCmdNode(LHC_FOLLOW_SECOND, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(FOCUS_POSITION_SECOND, ""); 
+  AddCmdNode(LASER_PULSEFREQ_SECOND, ""); 
+  AddCmdNode(LASER_DUTYRATIO_SECOND, ""); 
+  AddCmdNode(LASER_TYPE_SECOND, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_SECOND, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_SECOND, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_SECOND, ""); 
+
+  AddCmdNode(LHC_FOLLOW_FIRST, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(GAS_PRESSURE_FIRST, ""); 
+  AddCmdNode(GAS_OPEN_FIRST, ""); 
+  AddCmdNode(FOCUS_POSITION_FIRST, ""); 
+  AddCmdNode(LASER_POWER_FIRST, "");
+  AddCmdNode(LASER_PULSEFREQ_FIRST, ""); 
+  AddCmdNode(LASER_DUTYRATIO_FIRST, ""); 
+  AddCmdNode(LASER_TYPE_FIRST, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_FIRST, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_FIRST, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_FIRST, ""); 
+}
+
+void LaserXmlParser::SetPierce3Procedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("ThirdPierce");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("ThirdPierce");
+
+  AddCmdNode(LASER_POWER_THIRD, "");
+  AddCmdNode(GAS_PRESSURE_THIRD, ""); 
+  AddCmdNode(GAS_OPEN_THIRD, ""); 
+  AddCmdNode(LHC_FOLLOW_THIRD, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(FOCUS_POSITION_THIRD, ""); 
+  AddCmdNode(LASER_PULSEFREQ_THIRD, ""); 
+  AddCmdNode(LASER_DUTYRATIO_THIRD, ""); 
+  AddCmdNode(LASER_TYPE_THIRD, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_THIRD, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_THIRD, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_THIRD, ""); 
+
+  AddCmdNode(LHC_FOLLOW_SECOND, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(GAS_PRESSURE_SECOND, ""); 
+  AddCmdNode(GAS_OPEN_SECOND, ""); 
+  AddCmdNode(FOCUS_POSITION_SECOND, ""); 
+  AddCmdNode(LASER_POWER_SECOND, "");
+  AddCmdNode(LASER_PULSEFREQ_SECOND, ""); 
+  AddCmdNode(LASER_DUTYRATIO_SECOND, ""); 
+  AddCmdNode(LASER_TYPE_SECOND, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_SECOND, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_SECOND, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_SECOND, ""); 
+
+  AddCmdNode(LHC_FOLLOW_FIRST, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(GAS_PRESSURE_FIRST, ""); 
+  AddCmdNode(GAS_OPEN_FIRST, ""); 
+  AddCmdNode(FOCUS_POSITION_FIRST, ""); 
+  AddCmdNode(LASER_POWER_FIRST, "");
+  AddCmdNode(LASER_PULSEFREQ_FIRST, ""); 
+  AddCmdNode(LASER_DUTYRATIO_FIRST, ""); 
+  AddCmdNode(LASER_TYPE_FIRST, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_FIRST, ""); 
+  AddCmdNode(LHC_PROGRESSIVE_FIRST, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(LHC_Z_AXIS_HOLD, ""); 
+  AddCmdNode(DELAY_BLOW_FIRST, ""); 
+}
+
+void LaserXmlParser::SetStripingProcedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("Striping");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("Striping");
+
+  AddCmdNode(LASER_POWER_CUTTING, "");
+  AddCmdNode(GAS_PRESSURE_CUTTING, ""); 
+  AddCmdNode(GAS_OPEN_CUTTING, ""); 
+  AddCmdNode(LHC_FOLLOW_CUTTING, ""); 
+  AddCmdNode(FOCUS_POSITION_CUTTING, ""); 
+  AddCmdNode(LASER_PULSEFREQ_CUTTING, ""); 
+  AddCmdNode(LASER_DUTYRATIO_CUTTING, ""); 
+  AddCmdNode(LASER_TYPE_CUTTING, ""); 
+  AddCmdNode(LASER_ON, ""); 
+  AddCmdNode(DELAY_STAY_CUTTING, ""); 
+}
+
+void LaserXmlParser::SetCoolingProcedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("Cooling");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("Cooling");
+
+  AddCmdNode(GAS_PRESSURE_CUTTING, ""); 
+  AddCmdNode(GAS_OPEN_CUTTING, ""); 
+  AddCmdNode(LHC_FOLLOW_CUTTING, ""); 
+  AddCmdNode(DELAY_STAY_CUTTING, "");
+}
+
+void LaserXmlParser::SetLaserOffProcedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("LaserOff");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("LaserOff");
+
+  AddCmdNode(DELAY_BLOW_CUTTING, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+  AddCmdNode(GAS_CLOSE_CUTTING, ""); 
+  AddCmdNode(LHC_LIFT, "");
+}
+
+void LaserXmlParser::SetLaserOffShortProcedure() {
+  pugi::xml_node parent_node = FindNodeByPath("LaserParam/Procedure");
+  pugi::xml_node node = parent_node.child("LaserOffShort");
+  if (node) {
+    parent_node.remove_child(node);
+  } 
+  node = parent_node.append_child("LaserOffShort");
+
+  AddCmdNode(DELAY_BLOW_CUTTING, ""); 
+  AddCmdNode(LASER_OFF, ""); 
+}
