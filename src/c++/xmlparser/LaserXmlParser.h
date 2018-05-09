@@ -1,9 +1,34 @@
 #ifndef XML_PARSER_LASERXMLPARSER_H_
 #define XML_PARSER_LASERXMLPARSER_H_
+
+#include <vector>
+
 #include "XmlParser.h"
+
+#include "PlcCfg.h"
+
+struct CraftData {
+  bool enable_incr;
+  double incr_time;
+  int gas;
+  double pressure;
+  double lift_height;
+  double power;
+  double ratio;
+  double frequency;
+  double focus;
+  double stay;
+  bool enable_blow;
+  bool blow_time;
+};
 
 class LaserXmlParser: public XmlParser {
  public:
+
+  bool GetLayerData(int layer, ProcessCfg &process,
+      std::vector<CraftData> &craft_data); 
+
+  /// Generate the standard xml parameter file
   bool AddLayerNodes(int num);
   bool AddLayerContents(pugi::xml_node layer_node);
   void LayerNodeComplement(pugi::xml_node layer_node);

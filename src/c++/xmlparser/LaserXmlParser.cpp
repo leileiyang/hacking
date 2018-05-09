@@ -1,5 +1,7 @@
 #include "LaserXmlParser.h"
 
+#include <assert.h>
+
 #include "PlcCfg.h"
 
 bool LaserXmlParser::AddLayerNodes(int num) {
@@ -356,4 +358,46 @@ void LaserXmlParser::SetLaserOffShortProcedure() {
 
   AddCmdNode(DELAY_BLOW_CUTTING, ""); 
   AddCmdNode(LASER_OFF, ""); 
+}
+
+bool LaserXmlParser::GetLayerData(int layer, ProcessCfg &process,
+    std::vector<CraftData> &craft_data) {
+
+  pugi::xpath_node_set layer_nodes = SelectNodes("LaserParam/PlcParam/Layer");
+  assert(layer < layer_nodes.size());
+  pugi::xml_node process_node = layer_nodes[layer].node().child("ProcessCfg");  
+  if (process_node) {
+    process.no_lift = process_node.attribute("no_lift").as_bool();
+    process.pre_pierce = process_node.attribute("pre_pierce").as_bool();
+    process.striping = process_node.attribute("striping").as_bool();
+    process.cooling = process_node.attribute("cooling").as_bool();
+    process.cutting = process_node.attribute("cutting").as_int();
+    process.no_follow = process_node.attribute("no_follow").as_bool();
+    process.keep_air = process_node.attribute("keep_air").as_bool();
+    process.skip = process_node.attribute("skip").as_bool();
+    process.craft_level = process_node.attribute("craft_level").as_int();
+  }
+  pugi::xml_node craft_node = layer_nodes[layer].node().child("CraftData");  
+  if (craft_node) {
+    craft_data.clear();
+    for (pugi::xml_node node = craft_node; node;
+        node = node.next_sibling("CraftData")) {
+
+      CraftData craftdata;
+      craftdata.enable_incr = node.attribute("enable_incr").as_bool();
+      craftdata.incr_time = node.attribute("incr_time").as_double();
+      craftdata.lift_height = node.attribute("lift").as_double();
+      craftdata.gas = node.attribute("gas").as_int();
+      craftdata.pressure = node.attribute("pressure").as_double();
+      craftdata.power = node.attribute("power").as_double();
+      craftdata.ratio = node.attribute("ratio").as_double();
+      craftdata.frequency = node.attribute("frequency").as_double();
+      craftdata.focus = node.attribute("focus").as_double();
+      craftdata.stay = node.attribute("stay").as_double();
+      craftdata.enable_blow = node.attribute("enable_blow").as_bool();
+      craftdata.blow_time = node.attribute("blow_time").as_bool();
+      craft_data.push_back(craftdata);
+    }
+  }
+  assert(craft_data.size() == CRAFT_LEVELS);
 }
