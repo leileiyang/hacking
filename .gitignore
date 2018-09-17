@@ -1,0 +1,4 @@
+src/*.[oa]
+src/draft/*.[oa]
+src/c++/xmlparser/*.[oa]
+src/c++/job_expansion/*.[oa]
